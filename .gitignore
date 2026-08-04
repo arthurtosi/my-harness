@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# DEFAULT-DENY. This repository is ~/.claude — a live Claude Code config that
+# contains conversation transcripts, credentials and third-party code.
+#
+# Rule: deny everything, then allow only what is published. Anything new that
+# appears in ~/.claude is ignored BY CONSTRUCTION — the possible mistake becomes
+# "I forgot to publish a file" (annoying) instead of "I leaked a client
+# transcript" (serious).
+#
+# Adding a new file to the repo takes TWO lines: allow its directory, then allow
+# the file. Read the pattern below before adding anything.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# deny everything
+/*
+/**
+
+# ── root files that are published ──
+!/.gitignore
+!/README.md
+!/LICENSE
+!/INSTALL.md
+!/CLAUDE.md
+
+# ── skills/ : only the eight authored here ──
+# grill-me and grill-with-docs are NOT published (third party, Matt Pocock)
+!/skills/
+/skills/*
+!/skills/init-project/
+!/skills/epic/
+!/skills/breakdown/
+!/skills/feature/
+!/skills/intake/
+!/skills/review/
+!/skills/eval/
+!/skills/harness/
+!/skills/*/SKILL.md
+!/skills/*/*.md
+
+# ── hooks/ : the three sensors plus the settings snippet ──
+!/hooks/
+/hooks/*
+!/hooks/harness-route.sh
+!/hooks/harness-drift.sh
+!/hooks/harness-guard.sh
+!/hooks/settings-snippet.json
+
+# ── harness/ : the method documents ──
+!/harness/
+/harness/*
+!/harness/FORMATS.md
+!/harness/PRINCIPLES.md
+!/harness/PROFILE.md
+!/harness/LAYERS.md
+!/harness/LEDGER.md
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Never published, and each for a reason. Listed explicitly as documentation —
+# the /* /** above already denies them, but a reader deserves to know why.
+#
+#   projects/            transcripts of every conversation, including client work
+#   sessions/            idem
+#   history.jsonl        every prompt ever typed
+#   .claude.json         MCP server config — may contain tokens
+#   settings.json        personal: model, plugins, marketplaces
+#   settings.local.json  idem
+#   plugins/             third-party code
+#   skills/grill-*       third party (Matt Pocock) — install from the source
+#   todos/ tasks/ plans/ jobs/ ide/ session-env/ downloads/ backups/
+#   cache/ paste-cache/ file-history/ shell-snapshots/ statsig/ telemetry/
+#   *.log  daemon*       runtime noise
+# ─────────────────────────────────────────────────────────────────────────────

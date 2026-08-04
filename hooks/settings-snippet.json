@@ -1,0 +1,37 @@
+{
+  "_comment": "MERGE these three entries into the 'hooks' key of your ~/.claude/settings.json. Never replace the file. Preserve any hooks you already have. Expand ~ to your absolute home path in the commands — some shells do not expand it here. Validate with: python3 -m json.tool ~/.claude/settings.json",
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/harness-route.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/harness-drift.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/harness-guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
