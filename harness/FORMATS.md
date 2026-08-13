@@ -150,8 +150,9 @@ Index rules:
 
 ## 4. EPIC.md — `specs/<epic>/EPIC.md`
 
-**Functional language only**: what users do and see. Zero technical terms (no tables,
-endpoints, libraries — unless the product IS an API).
+**Functional language only**: what users do and see. Zero technical terms (no endpoints or
+libraries — unless the product IS an API). The derived Execution waves table is the sole
+operational exception: it exists so the user can see order and parallelism without opening files.
 
 ```markdown
 # Epic: <name>
@@ -168,6 +169,9 @@ understands it completely.>
 1. In <context>, when <trigger>, then <outcome>.
 2. ...
 
+## Execution waves
+Not generated yet — the breakdown skill replaces this line with the derived table.
+
 ## Out of scope
 <behaviors deliberately NOT included, so nobody — human or AI — invents them.>
 
@@ -180,6 +184,26 @@ by the user) before /breakdown runs.>
 - [ ] Prototype at <path> on <YYYY-MM-DD>  (the prototype stays as visual reference;
       the epic text must stand on its own)
 ```
+
+After breakdown, `## Execution waves` uses this projection:
+
+```markdown
+| Wave | ID | Behavior | Depends on |
+|---:|---:|---|---|
+| 1 | 001 | [<title>](behaviors/001-<slug>.md) | — |
+| 2 | 002 | [<title>](behaviors/002-<slug>.md) | 001 |
+```
+
+Wave rules:
+- `depends_on` in behavior frontmatter is the **single source of truth**. This table is a
+  readable derived view; rebuild it in the same change whenever any dependency changes.
+- Wave 1 has no dependencies. A behavior's wave is `1 + max(wave of each dependency)`.
+- Every referenced dependency must exist; self-dependencies and cycles are invalid.
+- No behavior in a wave may depend directly or transitively on another member of that wave.
+  Therefore a wave is dependency-safe to execute concurrently.
+- Execute each concurrent behavior in its own worktree, all branched from the same
+  `wf/<epic>` commit. Integrate completed behavior branches into `wf/<epic>` **serially** and
+  run verification after any conflict resolution. Dependency-safe does not promise file-disjoint.
 
 ---
 
@@ -459,6 +483,9 @@ asking whether it is producing well.
 - **ISO dates** (`YYYY-MM-DD`) in every chronological record. `DD/MM` is a bug, not a style.
 - **Branches**: `wf/<epic>` (epic branch) · `wf/<epic>--<id>` (behavior branch; `--` avoids a
   ref-hierarchy clash with `wf/<epic>`).
+- **Parallel wave worktrees**: keep the main checkout on `wf/<epic>` and use one sibling
+  worktree per behavior: `../<repo>--<epic>--<id>`. All behavior branches in a wave start from
+  the same epic-branch commit; execution is parallel, integration into the epic branch is serial.
 - **Commits**: `feat(<epic>/<id>): <behavior title>` · planning state: `chore(wf): ...`.
 - **One fact, one owner.** If two files can answer the same question, one of them will lie.
 - **Secrets and client data never in git**: `.env*`, `intake/` and similar go in `.gitignore`

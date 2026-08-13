@@ -127,6 +127,10 @@ The user answers `1 yes, 2-6 apply, 7 later`.
 
 ## 5. Apply only what was approved
 
+If an approved change adds, cancels, or changes a behavior dependency, recompute and replace that
+epic's derived `## Execution waves` table in the same change (FORMATS §4). The behavior
+frontmatter remains canonical; the table must never lag behind it.
+
 - Edit behaviors, `PLAN.md`, `CONTEXT.md`, rubrics — only what was approved, nothing more.
 - **Add the input's path to the `ctx:`** of every behavior it originated or changed. That is how,
   months later, *"why does this exist and who decided it?"* has an answer.

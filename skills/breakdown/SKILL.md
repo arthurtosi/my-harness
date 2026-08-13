@@ -1,12 +1,13 @@
 ---
 name: breakdown
-description: Breaks an approved epic into unit behaviors — one stub file per behavior, with complete scenarios (deterministic and semantic) and a minimal dependency graph — and shows the execution waves for the user to confirm. Use when the user says "breakdown", "break down the epic", "generate the behaviors", or when an approved EPIC.md has no behaviors/ yet. No technical plan is written here — planning happens at execution time.
+description: Breaks an approved epic into unit behaviors — one stub file per behavior, with complete scenarios (deterministic and semantic) and a minimal dependency graph — and persists the execution waves in EPIC.md for the user to confirm and run in parallel worktrees. Use when the user says "breakdown", "break down the epic", "generate the behaviors", or when an approved EPIC.md has no behaviors/ yet. No technical plan is written here — planning happens at execution time.
 ---
 
 # Breakdown: epic → behavior graph
 
 Input: `specs/<epic>/EPIC.md`. Output: `specs/<epic>/behaviors/NNN-<slug>.md`, one per behavior,
-in the format of `~/.claude/harness/FORMATS.md §5–6`, plus the wave table.
+in the format of `~/.claude/harness/FORMATS.md §5–6`, plus the derived wave table persisted in
+`EPIC.md` (FORMATS §4).
 
 ## 0. Gate
 
@@ -68,19 +69,30 @@ the scenarios. **Never invent behaviors to fill a quota.**
 - **Keep it MINIMAL: every false dependency destroys parallelism.** Two behaviors in different
   zones are independent even if they "feel related".
 - **Cycles are forbidden** — if one appears, the behaviors were badly split; re-split them.
+- Validate before computing waves: every dependency id exists, no behavior depends on itself,
+  and the graph is acyclic. A behavior's wave is `1 + max(wave of each dependency)`; no
+  dependencies means wave 1.
 
 ## 4. Waves + confirmation
 
-Compute and show the user:
+Compute, write into `EPIC.md`, and show the user:
 
 ```
-| id  | behavior                          | depends_on |
-...
-Waves: 1 → 001, 002, 005 · 2 → 003, 004 · 3 → 006
+| Wave | ID | Behavior | Depends on |
+|---:|---:|---|---|
+| 1 | 001 | [Create a conversation](behaviors/001-create-conversation.md) | — |
+| 2 | 002 | [Delete a conversation](behaviors/002-delete-conversation.md) | 001 |
 ```
 
+- `depends_on` frontmatter remains canonical; the table is a derived user view. Rebuild it in
+  the same change whenever intake or replanning changes a dependency.
+- Members of one wave have no dependency path between them. Mark the wave as safe to **execute
+  concurrently in one worktree per behavior**, all from the same `wf/<epic>` commit.
+- Say explicitly: execution is parallel; integration into `wf/<epic>` is serial. Worktrees
+  isolate checkouts, but late Technical Plans can still reveal overlapping files and merge conflicts.
 - **Bad-graph signal**: waves of one behavior each — that is a queue disguised as a graph.
   Re-examine the dependencies before showing it.
 - Ask for a quick confirmation. This is the only moment the user looks at the graph.
-- Confirmed: update the index in `PLAN.md` and point at the next step — `/feature` (or the
-  orchestrator, once it exists).
+- Confirmed: update the index in `PLAN.md` and point at wave 1. For concurrent execution, keep
+  the main checkout on `wf/<epic>`, create one worktree per behavior, and invoke the `feature`
+  skill with an explicit id inside each worktree.

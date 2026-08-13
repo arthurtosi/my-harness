@@ -65,7 +65,7 @@ Out: an agent run is cheap to repeat and its state lives in git; cron + `claude 
 or money, or enough loops that retry visibility becomes necessary.
 
 **Wave orchestrator (the team kit's `bin/workflow.mjs`)** — layer 7.
-Design imported (waves, one worktree per behavior, status as the contract); code not yet.
-→ **Trigger:** adoption step 6 — the first epic with behaviors running the full manual cycle.
-Then adapt the orchestrator (it expects the `specs/<epic>/behaviors/` layout, compatible by
-construction).
+Manual contract active: the wave table lives in `EPIC.md`, one worktree isolates each behavior,
+and integration into the epic branch is serial. Automatic launch, retry and cleanup code is not yet.
+→ **Trigger:** one full wave completed through this manual worktree protocol. Then adapt the
+orchestrator (it expects the `specs/<epic>/behaviors/` layout, compatible by construction).

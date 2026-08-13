@@ -13,17 +13,28 @@ user: `~/.claude/harness/PROFILE.md`.
 order: lowest `id` with `status: pending` whose `depends_on` are all `done`. `blocked` and
 `failed` are never selected (`failed` re-enters only by human decision).
 
+**Parallel wave**: invoke this skill with an explicit behavior id in each worktree. Behaviors in
+one wave may execute concurrently only when they all branch from the same `wf/<epic>` commit.
+Execution is parallel; integration into the epic branch is serial. An explicitly selected
+behavior must still be `pending` with every dependency `done`; otherwise stop before branching.
+
 **A loose request from the user** (no existing behavior): write the behavior first — a stub with
 scenarios, in the right epic (a new capability → ask whether it opens an epic) — and only then
-execute. No change without a behavior; that is what keeps the plan true.
+rebuild that epic's derived Execution waves table before executing. No change without a behavior;
+that is what keeps the plan true.
 
 ## Gates (before anything)
 
 1. **Git**: does `git rev-parse HEAD` work? If not — **STOP**. Assemble a default-deny
    `.gitignore` (`.env*`, `intake/`, client data), leave the commands ready for the user to run,
    and record it in 🔴. Without a commit there is no reset, and without reset the protocol is theater.
-2. **Branch**: ensure `wf/<epic>` exists (created from main if needed). Create
-   `wf/<epic>--<id>` from `wf/<epic>` and work **on it**.
+2. **Branch or worktree**: ensure `wf/<epic>` exists (created from main if needed).
+   - One behavior running alone: create `wf/<epic>--<id>` from `wf/<epic>` and work on it.
+   - A wave running concurrently: keep the main checkout on `wf/<epic>` and create every
+     behavior branch/worktree from its current commit:
+     `git worktree add ../<repo>--<epic>--<id> -b wf/<epic>--<id> wf/<epic>`.
+     Open one Claude or Codex session in each worktree. Never run two behavior sessions in the
+     same checkout and never fold a completed same-wave branch into another behavior branch.
 3. Set `status: in_progress` in the frontmatter — the instant you start, not later.
 
 ## Phase 0 — Grounding (read little, read right)
@@ -184,8 +195,13 @@ In order — cheapest first:
 
 1. `## Verification Report` in the file (scenario → verdict → evidence table + mutation + suite).
    `status: done`.
-2. Merge: `git checkout wf/<epic> && git merge --no-ff wf/<epic>--<id>`, then delete the behavior
-   branch.
+2. Integrate:
+   - Single behavior: merge into `wf/<epic>` after verification.
+   - Parallel worktree: leave the verified branch intact and report it ready. The wave's main
+     checkout merges ready branches into `wf/<epic>` **one at a time**, running the full suite
+     after each merge. If a conflict appears, resolve it against both behaviors' scenarios and
+     rerun verification before continuing. Hand the user cleanup commands for the merged
+     worktree and branch; do not execute deletion yourself.
 3. A durable decision made along the way → an ADR (grill-with-docs format). A new term →
    `CONTEXT.md`. Something missing in the environment → `HARNESS.md` (MISTAKES/LEARNINGS/DESIRES).
 4. **Record FRICTION in `HARNESS.md` if any of these is true** (the process-efficiency channel —
